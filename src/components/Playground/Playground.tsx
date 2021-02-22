@@ -8,6 +8,7 @@ interface IPlayground {
 const Playground: React.FC<IPlayground> = ({ size }) => {
   const canvasRef = React.createRef<HTMLCanvasElement>();
 
+  const [count, setCount] = useState(0)
   const [fieldSize, setFieldSize] = useState({x: 0, y: 0})
   const [snake, setSnake] = useState([
     { x: 100, y: 100 },
@@ -18,6 +19,7 @@ const Playground: React.FC<IPlayground> = ({ size }) => {
   ]);
   const [direction, setDirection] = useState('right');
   const [onUpdate, setOnUpdate] = useState(false);
+  const [styleReplay, setStyleReplay] = useState('modal_hidden')
   const [apple, setApple] = useState({
     x: Math.floor((Math.random() * 200) / 10) * 10,
     y: Math.floor((Math.random() * 150) / 10) * 10,
@@ -41,7 +43,6 @@ const Playground: React.FC<IPlayground> = ({ size }) => {
   } 
 
   const handleSetApple = () => {
-    const ctx = canvasRef.current?.getContext('2d');
     const X = Math.floor((Math.random() * fieldSize.x) / 10) * 10;
     const Y = Math.floor((Math.random() * fieldSize.y) / 10) * 10 ;
     let collapse = false;
@@ -53,6 +54,7 @@ const Playground: React.FC<IPlayground> = ({ size }) => {
     })
     if(!collapse) {
       setApple({ x: X, y: Y});
+      setCount(count + 1)
     }
   };
 
@@ -138,6 +140,26 @@ const Playground: React.FC<IPlayground> = ({ size }) => {
     }
   };
 
+  const handleGameover = () => {
+    setStyleReplay('modal_visible')
+  }
+
+  const handleOnReplay = () => {
+    setCount(0)
+    setApple({
+      x: Math.floor((Math.random() * 200) / 10) * 10,
+      y: Math.floor((Math.random() * 150) / 10) * 10,
+    });
+    setSnake([
+      { x: 100, y: 100 },
+      { x: 110, y: 100 },
+      { x: 120, y: 100 },
+      { x: 130, y: 100 },
+      { x: 140, y: 100 },
+    ]);
+    setStyleReplay('modal_hidden')
+    setOnUpdate(!onUpdate);
+  }
 
   useEffect(() => {});
 
@@ -164,7 +186,7 @@ const Playground: React.FC<IPlayground> = ({ size }) => {
 
     let interval = setInterval(() => {
       handleUpdate();
-      !gameOver ? setOnUpdate(!onUpdate) : null;
+      !gameOver ? setOnUpdate(!onUpdate) : handleGameover();
     }, 100);
 
     let keysListener = window.addEventListener('keydown', handleSetDirection);
@@ -177,7 +199,15 @@ const Playground: React.FC<IPlayground> = ({ size }) => {
 
   return (
     <div>
+      <div>{count}</div>
       <canvas className={s.root} ref={canvasRef} width={fieldSize.x} height={fieldSize.y} />
+      <div className={s[styleReplay as keyof typeof s]}>
+        <button
+          onClick={() => handleOnReplay()}
+        >
+          replay
+        </button>
+      </div>
     </div>
   );
 };

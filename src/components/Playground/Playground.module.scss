@@ -1,3 +1,24 @@
 .root {
   background-color: rgba(235, 235, 235, 0.384);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+canvas {
+  border: 10px solid black;
+}
+
+.modal_hidden {
+  display: none;
+}
+
+.modal_visible {
+  position: absolute;
+  
+  margin: auto;
+  left: 0;
+  right: 0;
+  top: 50vh;
+  text-align: center;
 }
