@@ -13,6 +13,8 @@ module.exports = {
     filename: 'bundle.js',
   },
 
+  watch: true,
+  
   watchOptions: {
     ignored: /node_modules/,
     poll: 1000,
@@ -49,6 +51,10 @@ module.exports = {
       {
         test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/],
         use: ['url-loader'],
+      },
+      {
+        test: /\.ogg$/,
+        loader: 'file-loader'
       },
     ],
   },

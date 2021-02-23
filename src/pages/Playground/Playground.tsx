@@ -1,12 +1,29 @@
 import React, { useEffect, useState } from 'react';
+import cn from 'classnames';
+import PickUpOgg from './assets/PickUp.ogg';
+import Hit from './assets/Hit.ogg'
+import Click from '../../assets/Click.ogg';
+
 import s from './Playground.module.scss';
+import { useHistory } from 'react-router';
 
 interface IPlayground {
   size: string
+  speed: number
+  sound: boolean
+  handlePlaySound: (url_ogg: string) => void
 }
 
-const Playground: React.FC<IPlayground> = ({ size }) => {
+const Playground: React.FC<IPlayground> = (props) => {
+  const {
+    size,
+    speed,
+    sound,
+    handlePlaySound
+  } = props;
+
   const canvasRef = React.createRef<HTMLCanvasElement>();
+  const history = useHistory();
 
   const [count, setCount] = useState(0)
   const [fieldSize, setFieldSize] = useState({x: 0, y: 0})
@@ -40,12 +57,17 @@ const Playground: React.FC<IPlayground> = ({ size }) => {
         break;
       }
     } 
-  } 
+  };
+
+
 
   const handleSetApple = () => {
     const X = Math.floor((Math.random() * fieldSize.x) / 10) * 10;
     const Y = Math.floor((Math.random() * fieldSize.y) / 10) * 10 ;
     let collapse = false;
+    if(sound) {
+      handlePlaySound(PickUpOgg);
+    }
     snake.map((section) => {
       if(section.x === X && section.y === Y) {
         collapse = true;
@@ -74,6 +96,7 @@ const Playground: React.FC<IPlayground> = ({ size }) => {
           newSnake.push({ x: snake[snake.length - 1].x + 10, y: snake[snake.length - 1].y });
         }
         setSnake(newSnake);
+        setOnUpdate(!onUpdate)
         break;
       }
       case 'left': {
@@ -90,6 +113,7 @@ const Playground: React.FC<IPlayground> = ({ size }) => {
           newSnake.push({ x: snake[snake.length - 1].x - 10, y: snake[snake.length - 1].y });
         }
         setSnake(newSnake);
+        setOnUpdate(!onUpdate)
         break;
       }
       case 'up': {
@@ -106,6 +130,7 @@ const Playground: React.FC<IPlayground> = ({ size }) => {
           newSnake.push({ x: snake[snake.length - 1].x, y: snake[snake.length - 1].y - 10 });
         }
         setSnake(newSnake);
+        setOnUpdate(!onUpdate)
         break;
       }
       case 'down': {
@@ -122,6 +147,7 @@ const Playground: React.FC<IPlayground> = ({ size }) => {
           newSnake.push({ x: snake[snake.length - 1].x, y: snake[snake.length - 1].y + 10 });
         }
         setSnake(newSnake);
+        setOnUpdate(!onUpdate)
         break;
       }
     }
@@ -141,10 +167,16 @@ const Playground: React.FC<IPlayground> = ({ size }) => {
   };
 
   const handleGameover = () => {
-    setStyleReplay('modal_visible')
+    if(sound) {
+      handlePlaySound(Hit);
+    }
+    setStyleReplay('modal_visible');
   }
 
   const handleOnReplay = () => {
+    if(sound) {
+      handlePlaySound(Click);
+    }
     setCount(0)
     setApple({
       x: Math.floor((Math.random() * 200) / 10) * 10,
@@ -159,9 +191,15 @@ const Playground: React.FC<IPlayground> = ({ size }) => {
     ]);
     setStyleReplay('modal_hidden')
     setOnUpdate(!onUpdate);
+    setDirection('right')
   }
 
-  useEffect(() => {});
+  const handleToMenu = () => {
+    if(sound) {
+      handlePlaySound(Click);
+  } 
+    history.push('/')
+  }
 
   useEffect(() => {
     const ctx = canvasRef.current?.getContext('2d');
@@ -184,10 +222,11 @@ const Playground: React.FC<IPlayground> = ({ size }) => {
       }
     }
 
-    let interval = setInterval(() => {
-      handleUpdate();
-      !gameOver ? setOnUpdate(!onUpdate) : handleGameover();
-    }, 100);
+    let interval = setTimeout(() => {
+      
+      
+      !gameOver ? handleUpdate() : handleGameover();
+    }, speed);
 
     let keysListener = window.addEventListener('keydown', handleSetDirection);
 
@@ -199,15 +238,32 @@ const Playground: React.FC<IPlayground> = ({ size }) => {
 
   return (
     <div>
-      <div>{count}</div>
+      <div className={cn(s.count, "nes-text is-primary")}>Score: {count}</div>
       <canvas className={s.root} ref={canvasRef} width={fieldSize.x} height={fieldSize.y} />
       <div className={s[styleReplay as keyof typeof s]}>
-        <button
+      <button 
+          type="button"
+          className={cn(s.buttons, "nes-btn is-primary")}
           onClick={() => handleOnReplay()}
         >
-          replay
+          REPLAY
+        </button>
+        <button 
+          type="button"
+          className={cn(s.buttons, "nes-btn is-primary")}
+          onClick={() => handleToMenu()}
+        >
+          MENU
         </button>
       </div>
+
+      <button 
+          type="button"
+          className={cn(s.back, "nes-btn is-error")}
+          onClick={() => handleToMenu()}
+        >
+          BACK
+        </button>
     </div>
   );
 };
