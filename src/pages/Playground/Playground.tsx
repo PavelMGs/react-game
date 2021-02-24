@@ -8,33 +8,39 @@ import s from './Playground.module.scss';
 import { useHistory } from 'react-router';
 
 interface IPlayground {
-  size: string
-  speed: number
-  sound: boolean
   handlePlaySound: (url_ogg: string) => void
 }
 
+type SectionType = {x: number, y: number};
+
 const Playground: React.FC<IPlayground> = (props) => {
-  const {
-    size,
-    speed,
-    sound,
-    handlePlaySound
-  } = props;
+  const { handlePlaySound } = props;
+
+  useEffect(() => {
+    const initSNake = [
+      { x: 100, y: 100 },
+      { x: 110, y: 100 },
+      { x: 120, y: 100 },
+      { x: 130, y: 100 },
+      { x: 140, y: 100 },
+    ]
+
+    const X = Math.floor((Math.random() * 200) / 10) * 10
+    const Y = Math.floor((Math.random() * 150) / 10) * 10
+
+    localStorage.getItem('snake') ? null : localStorage.setItem('snake', JSON.stringify(initSNake))
+
+    localStorage.getItem('direction') ? null : localStorage.setItem('direction', 'right');
+
+    localStorage.getItem('apple') ? null : localStorage.setItem('apple', JSON.stringify({x: X, y: Y}))
+    
+  }, [])
 
   const canvasRef = React.createRef<HTMLCanvasElement>();
   const history = useHistory();
 
-  const [count, setCount] = useState(0)
+  
   const [fieldSize, setFieldSize] = useState({x: 0, y: 0})
-  const [snake, setSnake] = useState([
-    { x: 100, y: 100 },
-    { x: 110, y: 100 },
-    { x: 120, y: 100 },
-    { x: 130, y: 100 },
-    { x: 140, y: 100 },
-  ]);
-  const [direction, setDirection] = useState('right');
   const [onUpdate, setOnUpdate] = useState(false);
   const [styleReplay, setStyleReplay] = useState('modal_hidden')
   const [apple, setApple] = useState({
@@ -43,7 +49,8 @@ const Playground: React.FC<IPlayground> = (props) => {
   });
 
   const handleSetFieldSize = () => {
-    switch(size) {
+    const localSize = localStorage.getItem('fieldSize') || 'medium'
+    switch(localSize) {
       case "small": {
         setFieldSize({x: 200, y: 150})
         break;
@@ -65,88 +72,107 @@ const Playground: React.FC<IPlayground> = (props) => {
     const X = Math.floor((Math.random() * fieldSize.x) / 10) * 10;
     const Y = Math.floor((Math.random() * fieldSize.y) / 10) * 10 ;
     let collapse = false;
-    if(sound) {
+    if(JSON.parse(localStorage.getItem('sound') || '')) {
       handlePlaySound(PickUpOgg);
     }
-    snake.map((section) => {
+    const localSnake = JSON.parse(localStorage.getItem('snake') || '');
+    localSnake.map((section: SectionType) => {
       if(section.x === X && section.y === Y) {
         collapse = true;
         handleSetApple();
       }
     })
     if(!collapse) {
+      localStorage.setItem('apple', JSON.stringify({ x: X, y: Y}))
       setApple({ x: X, y: Y});
-      setCount(count + 1)
+      let currentCount = parseInt(localStorage.getItem('score') || '0');
+      currentCount++;
+      localStorage.setItem('score', `${currentCount}`)
     }
   };
 
   const handleUpdate = () => {
-    
-    switch (direction) {
+    const localDirection = localStorage.getItem('direction');
+    const appleLocal = JSON.parse(localStorage.getItem('apple') || '{x: 0, y: 0}')
+    const wallsLocal = JSON.parse(localStorage.getItem('walls') || 'false')
+    const localSnake = JSON.parse(localStorage.getItem('snake') || '');
+
+    switch (localDirection) {
+
       case 'right': {
-        let newSnake = snake;
-        if (snake[snake.length - 1].x !== apple.x || snake[snake.length - 1].y !== apple.y) {
+        let newSnake = localSnake;
+        if (localSnake[localSnake.length - 1].x !== appleLocal.x || localSnake[localSnake.length - 1].y !== appleLocal.y) {
           newSnake.shift();
         } else {
           handleSetApple();
         }
-        if (snake[snake.length - 1].x === fieldSize.x -10) {
-          newSnake.push({ x: 0, y: snake[snake.length - 1].y });
+        if (localSnake[localSnake.length - 1].x >= fieldSize.x -10 && fieldSize.x > 10) {
+          wallsLocal 
+          ? newSnake.push({x: localSnake[2].x, y: localSnake[2].y})
+          : newSnake.push({ x: 0, y: localSnake[localSnake.length - 1].y });
         } else {
-          newSnake.push({ x: snake[snake.length - 1].x + 10, y: snake[snake.length - 1].y });
+          newSnake.push({ x: localSnake[localSnake.length - 1].x + 10, y: localSnake[localSnake.length - 1].y });
         }
-        setSnake(newSnake);
+        localStorage.setItem('snake', JSON.stringify(newSnake))
         setOnUpdate(!onUpdate)
         break;
       }
       case 'left': {
         
-        const newSnake = snake;
-        if (snake[snake.length - 1].x !== apple.x || snake[snake.length - 1].y !== apple.y) {
+        let newSnake = localSnake;
+        if (localSnake[localSnake.length - 1].x !== appleLocal.x || localSnake[localSnake.length - 1].y !== appleLocal.y) {
           newSnake.shift();
         } else {
           handleSetApple();
         }
-        if (snake[snake.length - 1].x === 0) {
-          newSnake.push({ x: fieldSize.x - 10, y: snake[snake.length - 1].y });
+        if (localSnake[localSnake.length - 1].x <= 0 && fieldSize.x > 10) {
+          wallsLocal 
+          ? newSnake.push({x: localSnake[2].x, y: localSnake[2].y})
+          : newSnake.push({ x: fieldSize.x - 10, y: localSnake[localSnake.length - 1].y });
         } else {
-          newSnake.push({ x: snake[snake.length - 1].x - 10, y: snake[snake.length - 1].y });
+          newSnake.push({ x: localSnake[localSnake.length - 1].x - 10, y: localSnake[localSnake.length - 1].y });
         }
-        setSnake(newSnake);
+        localStorage.setItem('snake', JSON.stringify(newSnake));
         setOnUpdate(!onUpdate)
         break;
       }
       case 'up': {
         
-        const newSnake = snake;
-        if (snake[snake.length - 1].x !== apple.x || snake[snake.length - 1].y !== apple.y) {
+        let newSnake = localSnake;
+        if (localSnake[localSnake.length - 1].x !== appleLocal.x || localSnake[localSnake.length - 1].y !== appleLocal.y) {
           newSnake.shift();
         } else {
           handleSetApple();
         }
-        if (snake[snake.length - 1].y === 0) {
-          newSnake.push({ x: snake[snake.length - 1].x, y: fieldSize.y - 10});
+        if (localSnake[localSnake.length - 1].y <= 0 && fieldSize.y > 10) {
+          wallsLocal 
+          ? newSnake.push({x: localSnake[2].x, y: localSnake[2].y})
+          : newSnake.push({ x: localSnake[localSnake.length - 1].x, y: fieldSize.y - 10});
         } else {
-          newSnake.push({ x: snake[snake.length - 1].x, y: snake[snake.length - 1].y - 10 });
+          newSnake.push({ x: localSnake[localSnake.length - 1].x, y: localSnake[localSnake.length - 1].y - 10 });
         }
-        setSnake(newSnake);
+        
+        localStorage.setItem('snake', JSON.stringify(newSnake));
         setOnUpdate(!onUpdate)
         break;
       }
       case 'down': {
         
-        const newSnake = snake;
-        if (snake[snake.length - 1].x !== apple.x || snake[snake.length - 1].y !== apple.y) {
+        let newSnake = localSnake;
+        if (localSnake[localSnake.length - 1].x !== appleLocal.x || localSnake[localSnake.length - 1].y !== appleLocal.y) {
           newSnake.shift();
         } else {
           handleSetApple();
         }
-        if (snake[snake.length - 1].y === fieldSize.y - 10) {
-          newSnake.push({ x: snake[snake.length - 1].x, y: 0 });
+        if (localSnake[localSnake.length - 1].y >= fieldSize.y - 10 && fieldSize.y > 10) {
+          wallsLocal 
+          ? newSnake.push({x: localSnake[2].x, y: localSnake[2].y})
+          : newSnake.push({ x: localSnake[localSnake.length - 1].x, y: 0 });
         } else {
-          newSnake.push({ x: snake[snake.length - 1].x, y: snake[snake.length - 1].y + 10 });
+          newSnake.push({ x: localSnake[localSnake.length - 1].x, y: localSnake[localSnake.length - 1].y + 10 });
         }
-        setSnake(newSnake);
+        
+        localStorage.setItem('snake', JSON.stringify(newSnake));
         setOnUpdate(!onUpdate)
         break;
       }
@@ -154,51 +180,77 @@ const Playground: React.FC<IPlayground> = (props) => {
   };
 
   const handleSetDirection = (e: KeyboardEvent) => {
-    const { keyCode } = e; //key возвращает символ, что создаёт проблемы с совместимостью с разными языковыми рас кладками
-    if (keyCode === 87 && direction !== 'up' && direction !== 'down') {
-      setDirection('up');
-    } else if (keyCode === 65 && direction !== 'left' && direction !== 'right') {
-      setDirection('left');
-    } else if (keyCode === 83 && direction !== 'up' && direction !== 'down') {
-      setDirection('down');
-    } else if (keyCode === 68 && direction !== 'right' && direction !== 'left') {
-      setDirection('right');
+    const { keyCode } = e; //key возвращает символ, что создаёт проблемы с совместимостью с разными языковыми раскладками
+    const localDirection = localStorage.getItem('direction');
+    if (keyCode === 87 && localDirection !== 'up') {
+      localStorage.setItem('direction', 'up');
+    } else if (keyCode === 65 && localDirection !== 'left') {
+      localStorage.setItem('direction', 'left')
+    } else if (keyCode === 83 && localDirection !== 'down') {
+      localStorage.setItem('direction', 'down')
+    } else if (keyCode === 68 && localDirection !== 'right') {
+      localStorage.setItem('direction', 'right')
     }
   };
 
   const handleGameover = () => {
-    if(sound) {
+    if(JSON.parse(localStorage.getItem('sound') || '')) {
       handlePlaySound(Hit);
     }
+    handleSetDefault()
+    
     setStyleReplay('modal_visible');
   }
 
   const handleOnReplay = () => {
-    if(sound) {
+    if(JSON.parse(localStorage.getItem('sound') || '')) {
       handlePlaySound(Click);
     }
-    setCount(0)
+      localStorage.setItem('score', '0')
     setApple({
       x: Math.floor((Math.random() * 200) / 10) * 10,
       y: Math.floor((Math.random() * 150) / 10) * 10,
     });
-    setSnake([
+    const newSNake = [
       { x: 100, y: 100 },
       { x: 110, y: 100 },
       { x: 120, y: 100 },
       { x: 130, y: 100 },
       { x: 140, y: 100 },
-    ]);
+    ];
+    localStorage.setItem('snake', JSON.stringify(newSNake))
     setStyleReplay('modal_hidden')
     setOnUpdate(!onUpdate);
-    setDirection('right')
+    localStorage.setItem('direction', 'right')
   }
 
   const handleToMenu = () => {
-    if(sound) {
+    if(JSON.parse(localStorage.getItem('sound') || '')) {
       handlePlaySound(Click);
   } 
+    handleSetDefault()
     history.push('/')
+  }
+
+  const handleSetDefault = () => {
+    const initSNake = [
+      { x: 100, y: 100 },
+      { x: 110, y: 100 },
+      { x: 120, y: 100 },
+      { x: 130, y: 100 },
+      { x: 140, y: 100 },
+    ]
+
+    const X = Math.floor((Math.random() * 200) / 10) * 10
+    const Y = Math.floor((Math.random() * 150) / 10) * 10
+
+    localStorage.setItem('snake', JSON.stringify(initSNake))
+
+    localStorage.setItem('direction', 'right');
+
+    localStorage.setItem('apple', JSON.stringify({x: X, y: Y}))
+
+    localStorage.setItem('score', '0')
   }
 
   useEffect(() => {
@@ -206,18 +258,23 @@ const Playground: React.FC<IPlayground> = (props) => {
     handleSetFieldSize()
     ctx?.clearRect(0, 0, 800, 500);
     let gameOver = false;
+
+    const localSnake = JSON.parse(localStorage.getItem('snake') || '')
     
-    snake.map((item) => {
+    localSnake.map((item: SectionType) => {
       ctx ? ctx.fillStyle = 'green' : null;
       ctx?.fillRect(item.x, item.y, 10, 10);
       
     });
 
-    ctx ? ctx.fillStyle = 'red' : null;
-    ctx?.fillRect(apple.x, apple.y, 10, 10, );
+    const appleLocal = JSON.parse(localStorage.getItem('apple') || '{x: 100, y: 100}')
 
-    for(let i = 0; i < snake.length - 1; i++) {
-      if(snake[snake.length - 1].x === snake[i].x && snake[snake.length - 1].y === snake[i].y) {
+    ctx ? ctx.fillStyle = 'red' : null;
+    ctx?.fillRect(appleLocal.x, appleLocal.y, 10, 10, );
+
+    for(let i = 0; i < localSnake.length - 1; i++) {
+      if(localSnake[localSnake.length - 1].x === localSnake[i].x && localSnake[localSnake.length - 1].y === localSnake[i].y) {
+        
         gameOver = true;
       }
     }
@@ -226,19 +283,21 @@ const Playground: React.FC<IPlayground> = (props) => {
       
       
       !gameOver ? handleUpdate() : handleGameover();
-    }, speed);
+    }, parseInt(localStorage.getItem('speed') || '100'));
 
     let keysListener = window.addEventListener('keydown', handleSetDirection);
 
     return () => {
       clearInterval(interval);
+
+
       window.removeEventListener('keydown', handleSetDirection);
     };
   }, [onUpdate]);
 
   return (
     <div>
-      <div className={cn(s.count, "nes-text is-primary")}>Score: {count}</div>
+      <div className={cn(s.count, "nes-text is-primary")}>Score: {parseInt(localStorage.getItem('score') || '0')}</div>
       <canvas className={s.root} ref={canvasRef} width={fieldSize.x} height={fieldSize.y} />
       <div className={s[styleReplay as keyof typeof s]}>
       <button 

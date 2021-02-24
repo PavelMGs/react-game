@@ -6,31 +6,17 @@ import Click from '../../assets/Click.ogg'
 import s from './Settings.module.scss';
 
 interface ISettings {
-    changeFieldSize: (size: string) => void
-    changeSpeed: (speed: number) => void
-    setSound: (isOn: boolean) => void
-    fieldSize: string
-    speed: number
-    sound: boolean
     handlePlaySound: (url_ogg: string) => void
 }
 
 const Settings: React.FC<ISettings> = (props) => {
 
-    const {
-        changeFieldSize,
-        changeSpeed,
-        setSound,
-        fieldSize,
-        speed,
-        sound,
-        handlePlaySound
-    } = props;
+    const { handlePlaySound } = props;
 
     const history = useHistory();
 
     const handleToMenu = () => {
-        if(sound) {
+        if(JSON.parse(localStorage.getItem('sound') || '')) {
             handlePlaySound(Click);
         }
         history.push('/');
@@ -47,7 +33,7 @@ const Settings: React.FC<ISettings> = (props) => {
             case 'fieldSize': {
                 switch(e.target.id) {
                     case 'smallSize': {
-                        changeFieldSize('small')
+                        localStorage.setItem('fieldSize', 'small')
 
                         const mCheck: any = document.getElementById('mediumSize');
                         mCheck.checked = false;
@@ -57,7 +43,7 @@ const Settings: React.FC<ISettings> = (props) => {
                         break;
                     }
                     case 'mediumSize': {
-                        changeFieldSize('medium')
+                        localStorage.setItem('fieldSize', 'medium')
 
                         const sCheck: any = document.getElementById('smallSize');
                         sCheck.checked = false;
@@ -67,7 +53,7 @@ const Settings: React.FC<ISettings> = (props) => {
                         break;
                     }
                     case 'largeSize': {
-                        changeFieldSize('large')
+                        localStorage.setItem('fieldSize', 'large')
 
                         const sCheck: any = document.getElementById('smallSize');
                         sCheck.checked = false;
@@ -82,7 +68,7 @@ const Settings: React.FC<ISettings> = (props) => {
             case 'speed': {
                 switch(e.target.id) {
                     case 'lowSpeed': {
-                        changeSpeed(150)
+                        localStorage.setItem('speed', '150')
 
                         const mCheck: any = document.getElementById('mediumSpeed');
                         mCheck.checked = false;
@@ -92,7 +78,7 @@ const Settings: React.FC<ISettings> = (props) => {
                         break;
                     }
                     case 'mediumSpeed': {
-                        changeSpeed(100)
+                        localStorage.setItem('speed', '100')
 
                         const lCheck: any = document.getElementById('lowSpeed');
                         lCheck.checked = false;
@@ -102,7 +88,7 @@ const Settings: React.FC<ISettings> = (props) => {
                         break;
                     }
                     case 'fast': {
-                        changeSpeed(50)
+                        localStorage.setItem('speed', '50')
 
                         const lCheck: any = document.getElementById('lowSpeed');
                         lCheck.checked = false;
@@ -114,10 +100,33 @@ const Settings: React.FC<ISettings> = (props) => {
                 }
                 break;
             }
+
+            case 'walls': {
+                switch(e.target.id) {
+                    case 'wallsOn': {
+                        localStorage.setItem('walls', 'true')
+
+                        const check: any = document.getElementById('wallsOff');
+                        check.checked = false;
+
+                        break;
+                    }
+                    case 'wallsOff': {
+                        localStorage.setItem('walls', 'false')
+
+                        const check: any = document.getElementById('wallsOn');
+                        check.checked = false;
+
+                        break;
+                    }
+                }
+                break;
+            }
+
             case 'sound': {
                 switch(e.target.id) {
                     case 'soundOn': {
-                        setSound(true);
+                        localStorage.setItem('sound', 'true')
 
                         const check: any = document.getElementById('soundOff');
                         check.checked = false;
@@ -125,7 +134,8 @@ const Settings: React.FC<ISettings> = (props) => {
                         break;
                     }
                     case 'soundOff': {
-                        setSound(false);
+                        localStorage.setItem('sound', 'false')
+
                         const check: any = document.getElementById('soundOn');
                         check.checked = false;
 
@@ -138,7 +148,8 @@ const Settings: React.FC<ISettings> = (props) => {
     }
 
     useEffect(() => {
-        switch (fieldSize) {
+        const fieldSizeLocal = localStorage.getItem('fieldSize') || 'medium';
+        switch (fieldSizeLocal) {
             case "small": {
                 const check: any = document.getElementById('smallSize');
                 check.checked = true;
@@ -156,8 +167,9 @@ const Settings: React.FC<ISettings> = (props) => {
             }
         }
 
-        switch (speed) {
-            case 200: {
+        const speedLocal = parseInt(localStorage.getItem('speed') || '100')
+        switch (speedLocal) {
+            case 150: {
                 const check: any = document.getElementById('lowSpeed');
                 check.checked = true;
                 break;
@@ -174,7 +186,22 @@ const Settings: React.FC<ISettings> = (props) => {
             }
         }
 
-        switch (sound) {
+        const wallsLocal = JSON.parse(localStorage.getItem('walls') || 'false')
+        switch (wallsLocal) {
+            case true: {
+                const check: any = document.getElementById('wallsOn');
+                check.checked = true;
+                break;
+            }
+            case false: {
+                const check: any = document.getElementById('wallsOff');
+                check.checked = true;
+                break;
+            }
+        }
+
+        const soundLocal = JSON.parse(localStorage.getItem('sound') || 'true');
+        switch (soundLocal) {
             case true: {
                 const check: any = document.getElementById('soundOn');
                 check.checked = true;
@@ -262,6 +289,32 @@ const Settings: React.FC<ISettings> = (props) => {
                         onChange={(e) => handleCheck(e)}
                     />
                     <span>FAST</span>
+                </label>
+
+            </div>
+
+            <div className={s.checkBlock}>
+                <span className={cn(s.text, "nes-text is-primary")}>WALLS</span>
+                <label>
+                    <input
+                        type="checkbox"
+                        className="nes-checkbox"
+                        name="walls"
+                        id='wallsOn'
+                        onChange={(e) => handleCheck(e)}
+                    />
+                    <span>ON</span>
+                </label>
+
+                <label>
+                    <input
+                        type="checkbox"
+                        className="nes-checkbox"
+                        name="walls"
+                        id='wallsOff'
+                        onChange={(e) => handleCheck(e)}
+                    />
+                    <span>OFF</span>
                 </label>
 
             </div>

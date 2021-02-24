@@ -6,11 +6,10 @@ import Click from '../../assets/Click.ogg';
 
 interface IMenu {
   handlePlaySound: (url_ogg: string) => void
-  sound: boolean
 }
 
 const Menu: React.FC<IMenu> = (props) => {
-    const { handlePlaySound, sound } = props;
+    const { handlePlaySound } = props;
 
     const history = useHistory();
 
@@ -22,7 +21,7 @@ const Menu: React.FC<IMenu> = (props) => {
           type="button"
           className={cn(s.buttons, "nes-btn is-success")}
           onClick={() => {
-            if(sound) {
+            if(JSON.parse(localStorage.getItem('sound') || '')) {
                 handlePlaySound(Click);
             }   
             history.push('/playground')
@@ -34,7 +33,7 @@ const Menu: React.FC<IMenu> = (props) => {
           type="button"
           className={cn(s.buttons, "nes-btn is-success")}
           onClick={() => {
-            if(sound) {
+            if(JSON.parse(localStorage.getItem('sound') || '')) {
                 handlePlaySound(Click);
             }  
             history.push('/settings')
@@ -46,7 +45,7 @@ const Menu: React.FC<IMenu> = (props) => {
           type="button"
           className={cn(s.buttons, "nes-btn is-success")}
           onClick={() => {
-            if(sound) {
+            if(JSON.parse(localStorage.getItem('sound') || '')) {
                 handlePlaySound(Click);
             } 
             
