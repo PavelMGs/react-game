@@ -45,6 +45,10 @@ const App = () => {
     if(!localStorage.getItem('sound')) {
       localStorage.setItem('sound', JSON.stringify(true));
     }
+    
+    if(!localStorage.getItem('music')) {
+      localStorage.setItem('sound', JSON.stringify(false));
+    }
 
     if(!localStorage.getItem('walls')) {
       localStorage.setItem('walls', JSON.stringify(false));
