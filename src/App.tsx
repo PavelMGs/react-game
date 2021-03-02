@@ -4,8 +4,34 @@ import s from './App.module.scss';
 import { Route, Switch } from 'react-router';
 import Menu from './pages/Menu/Menu';
 import Settings from './pages/Settings/Settings';
+import SongOne from './assets/SongOne.ogg'
+import SongTwo from './assets/SongTwo.ogg'
+import SongThree from './assets/SongThree.ogg'
+import Scores from './pages/Scores/Scores';
+import Hint from './pages/Hint/Hint';
 
 const App = () => {
+
+  const [songNumber, setSongNumber] = useState(1);
+
+  const handleFullscreen = (event: KeyboardEvent) => {
+
+      if (event.keyCode !== 70) return;
+    
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      } else {
+        document.documentElement.requestFullscreen();
+      }
+  } 
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleFullscreen, false)
+
+    return () => {
+      document.removeEventListener('keydown', handleFullscreen);
+    }
+  }, [])
 
   useEffect(() => {
     if(!localStorage.getItem('fieldSize')) {
@@ -23,7 +49,46 @@ const App = () => {
     if(!localStorage.getItem('walls')) {
       localStorage.setItem('walls', JSON.stringify(false));
     }
+
+    localStorage.getItem('scores') 
+    ? null 
+    : localStorage.setItem('scores', JSON.stringify([]))
+
   }, [])
+
+
+  useEffect(() => {
+    handlePlayMusic();
+  }, [songNumber])
+
+  const handlePlayMusic = () => {
+    let songUrl;
+    let nextS: number;
+    if(songNumber === 1) {
+      songUrl = SongOne;
+      nextS = 2;
+    } else if(songNumber === 2) {
+      songUrl = SongTwo;
+      nextS = 3;
+    } else if(songNumber === 3) {
+      songUrl = SongThree;
+      nextS = 1;
+    }
+      console.log(songNumber)
+      const audio = document.createElement('audio');
+    audio.style.display = "none";
+    audio.src = songUrl;
+    audio.autoplay = true;
+    document.body.appendChild(audio)
+    audio.id = 'audio';
+    
+    audio.onended = function(){
+      audio.remove() //Remove when played.
+      setSongNumber(nextS)
+    };
+
+
+  }
 
   
 
@@ -55,12 +120,21 @@ const App = () => {
               </Route>
               <Route path='/settings'>
                 <Settings
-                handlePlaySound={handlePlaySound  }
+                handlePlaySound={handlePlaySound}
+                handlePlayMusic={handlePlayMusic}
+                />
+              </Route>
+              <Route path="/scores">
+                <Scores 
+                  handlePlaySound={handlePlaySound}
+                />
+              </Route>
+              <Route path="/hint">
+                <Hint
+                  handlePlaySound={handlePlaySound}
                 />
               </Route>
             </Switch>
-
-      {/* <Playground size="small"/> */}
     </div>
   );
 };

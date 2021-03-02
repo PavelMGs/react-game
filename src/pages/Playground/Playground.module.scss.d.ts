@@ -4,6 +4,7 @@ interface CssExports {
   'back': string;
   'buttons': string;
   'count': string;
+  'lose_text': string;
   'modal_hidden': string;
   'modal_visible': string;
   'root': string;

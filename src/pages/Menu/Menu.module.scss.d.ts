@@ -3,6 +3,8 @@
 interface CssExports {
   'buttons': string;
   'header': string;
+  'input': string;
+  'label': string;
   'root': string;
 }
 export const cssExports: CssExports;

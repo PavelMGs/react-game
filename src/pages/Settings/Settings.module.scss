@@ -1,6 +1,9 @@
 .root {
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
+    width: 350px;
+    justify-content: center;
 }
 
 .checkBlock {

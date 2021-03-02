@@ -1,0 +1,4 @@
+{
+    "serverPort" : 9000,
+    "dbUrl": "mongodb+srv://pavelmg:newpass@cluster0.zz0yz.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+}

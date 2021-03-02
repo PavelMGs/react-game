@@ -3,6 +3,7 @@ import cn from 'classnames';
 import PickUpOgg from './assets/PickUp.ogg';
 import Hit from './assets/Hit.ogg'
 import Click from '../../assets/Click.ogg';
+import Blast from './assets/Blast.png'
 
 import s from './Playground.module.scss';
 import { useHistory } from 'react-router';
@@ -33,8 +34,18 @@ const Playground: React.FC<IPlayground> = (props) => {
     localStorage.getItem('direction') ? null : localStorage.setItem('direction', 'right');
 
     localStorage.getItem('apple') ? null : localStorage.setItem('apple', JSON.stringify({x: X, y: Y}))
-    
+
+    document.addEventListener('keydown', handleReset, false)
+     return () => {
+       document.removeEventListener('keydown', handleReset)
+     }
   }, [])
+
+  const handleReset = (e: KeyboardEvent) => {
+    e.keyCode === 82
+    ? handleOnReplay()
+    : null;
+  }
 
   const canvasRef = React.createRef<HTMLCanvasElement>();
   const history = useHistory();
@@ -192,17 +203,43 @@ const Playground: React.FC<IPlayground> = (props) => {
       localStorage.setItem('direction', 'right')
     }
   };
+  
+  const handleSetScore = () => {
+    const score = parseInt(localStorage.getItem('score') || '0');
+    let speed = 'medium';
+    const localSpeed = localStorage.getItem('speed') || '100';
+    if(localSpeed === '100') {
+      speed = 'medium'
+    } else if (localSpeed === "50") {
+      speed = 'fast'
+    } else if(localSpeed === "150") {
+      const speed = 'low'
+    }
+    const scoreObj = {
+      score: score,
+      size: localStorage.getItem('fieldSize') || 'medium',
+      speed: speed,
+      walls: localStorage.getItem('walls') || 'false',
+      name: localStorage.getItem('player')
+    }
 
-  const handleGameover = () => {
+    let scores = JSON.parse(localStorage.getItem('scores') || '[]')
+    scores.push(scoreObj);
+    localStorage.setItem('scores', JSON.stringify(scores));
+  }
+
+  const handleGameover = async () => {
     if(JSON.parse(localStorage.getItem('sound') || '')) {
       handlePlaySound(Hit);
     }
-    handleSetDefault()
+
+    await handleSetScore();
     
     setStyleReplay('modal_visible');
   }
 
   const handleOnReplay = () => {
+    handleSetDefault()
     if(JSON.parse(localStorage.getItem('sound') || '')) {
       handlePlaySound(Click);
     }
@@ -225,6 +262,7 @@ const Playground: React.FC<IPlayground> = (props) => {
   }
 
   const handleToMenu = () => {
+    handleSetDefault()
     if(JSON.parse(localStorage.getItem('sound') || '')) {
       handlePlaySound(Click);
   } 
@@ -300,6 +338,8 @@ const Playground: React.FC<IPlayground> = (props) => {
       <div className={cn(s.count, "nes-text is-primary")}>Score: {parseInt(localStorage.getItem('score') || '0')}</div>
       <canvas className={s.root} ref={canvasRef} width={fieldSize.x} height={fieldSize.y} />
       <div className={s[styleReplay as keyof typeof s]}>
+      <div className={cn(s.lose_text, "nes-text is-primary")}> You Lose </div>
+      <div className={cn(s.lose_text, "nes-text is-primary")}> Score: {parseInt(localStorage.getItem('score') || '0')}</div>
       <button 
           type="button"
           className={cn(s.buttons, "nes-btn is-primary")}

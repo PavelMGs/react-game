@@ -1,4 +1,4 @@
-import React, { ChangeEvent, ChangeEventHandler, useEffect } from 'react'
+import React, { ChangeEvent, useEffect } from 'react'
 import { useHistory } from 'react-router';
 import cn from 'classnames';
 import Click from '../../assets/Click.ogg'
@@ -7,11 +7,12 @@ import s from './Settings.module.scss';
 
 interface ISettings {
     handlePlaySound: (url_ogg: string) => void
+    handlePlayMusic: () => void
 }
 
 const Settings: React.FC<ISettings> = (props) => {
 
-    const { handlePlaySound } = props;
+    const { handlePlaySound, handlePlayMusic } = props;
 
     const history = useHistory();
 
@@ -24,7 +25,7 @@ const Settings: React.FC<ISettings> = (props) => {
 
     const handleCheck = (e: ChangeEvent<HTMLInputElement>) => {
         const targetCheck: any = document.getElementById(`${e.target.id}`)
-        if(!targetCheck.checked) {
+        if(!targetCheck.checked) { //при клике на отмеченный, метка снимается. Этот условие, чтобы этого избежать
             targetCheck.checked = true;
             return;
         }
@@ -144,6 +145,35 @@ const Settings: React.FC<ISettings> = (props) => {
                 }
                 break;
             }
+
+            case 'music': {
+                switch(e.target.id) {
+                    case 'musicOn': {
+                        localStorage.setItem('music', 'true')
+                        handlePlayMusic()
+
+                        const check: any = document.getElementById('musicOff');
+                        check.checked = false;
+
+                        break;
+                    }
+                    case 'musicOff': {
+                        localStorage.setItem('music', 'false')
+                        let audio = document.querySelectorAll('audio')
+                        console.log(audio)
+                        while(document.getElementById('audio')) {
+                            document.getElementById('audio')?.remove()
+                        }
+                        audio = document.querySelectorAll('audio')
+                        console.log('after', audio)
+                        const check: any = document.getElementById('musicOn');
+                        check.checked = false;
+
+                        break;
+                    }
+                }
+                break;
+            }
         }
     }
 
@@ -209,6 +239,20 @@ const Settings: React.FC<ISettings> = (props) => {
             }
             case false: {
                 const check: any = document.getElementById('soundOff');
+                check.checked = true;
+                break;
+            }
+        }
+
+        const musicLocal = JSON.parse(localStorage.getItem('music') || 'true');
+        switch (musicLocal) {
+            case true: {
+                const check: any = document.getElementById('musicOn');
+                check.checked = true;
+                break;
+            }
+            case false: {
+                const check: any = document.getElementById('musicOff');
                 check.checked = true;
                 break;
             }
@@ -338,6 +382,32 @@ const Settings: React.FC<ISettings> = (props) => {
                         className="nes-checkbox"
                         name="sound"
                         id='soundOff'
+                        onChange={(e) => handleCheck(e)}
+                    />
+                    <span>OFF</span>
+                </label>
+
+            </div>
+
+            <div className={s.checkBlock}>
+                <span className={cn(s.text, "nes-text is-primary")}>MUSIC</span>
+                <label>
+                    <input
+                        type="checkbox"
+                        className="nes-checkbox"
+                        name="music"
+                        id='musicOn'
+                        onChange={(e) => handleCheck(e)}
+                    />
+                    <span>ON</span>
+                </label>
+
+                <label>
+                    <input
+                        type="checkbox"
+                        className="nes-checkbox"
+                        name="music"
+                        id='musicOff'
                         onChange={(e) => handleCheck(e)}
                     />
                     <span>OFF</span>
