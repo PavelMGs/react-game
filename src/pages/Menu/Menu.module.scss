@@ -1,0 +1,29 @@
+.root {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+.header {
+    font-size: 36px;
+    margin-bottom: 25px;
+}
+
+.buttons {
+    width: 95px;
+    margin-bottom: 15px;
+}
+
+.input{
+    height: 35px;
+    max-width: 250px;
+    font-size: 26px;
+    margin-bottom: 35px;
+    text-align: center;
+}
+
+.label {
+    width: 250;
+    text-align: center;
+    font-size: 26px;
+}

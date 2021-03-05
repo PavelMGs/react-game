@@ -1,0 +1,27 @@
+.root{
+    display: flex;
+    flex-direction: column;
+}
+
+.text {
+    font-size: 24px;
+}
+
+.fun {
+    text-align: center;
+    font-size: 24px;
+}
+
+.back {
+    position: absolute;
+    top: 85vh;
+    margin: auto;
+    left: 0;
+    right: 0;
+    height: 25px;
+    padding: 0;
+    width: 60px;
+  
+    font-size: 10px;
+  }
+  
